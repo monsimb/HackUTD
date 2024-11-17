@@ -6,13 +6,7 @@ from dotenv import load_dotenv
 import operator
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain.tools import tool, StructuredTool
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 from .api_calls import mortgage_rate
-
 
 load_dotenv()
 
@@ -26,29 +20,39 @@ client = openai.OpenAI(
 def predict_intent(model, text):
     return model.predict([text])[0]
 
-# Tool to handle home purchase and refinancing related queries
+# Tool to calculate the monthly payment for home loan
 @tool
 def calculate_home_loan(loan_amount: float, interest_rate: float, loan_term: int) -> float:
     """
     Calculate the monthly payment for a home loan using the loan amount,
     interest rate, and loan term.
     """
-    monthly_interest_rate = float(mortgage_rate()[0]) / 12 / 100
+    mortgage_rates = mortgage_rate()
+    current_rate = mortgage_rates[0]  # Use the 15-year rate or another option
+
+    monthly_interest_rate = current_rate / 12 / 100  # Convert annual rate to monthly
     num_payments = loan_term * 12
     monthly_payment = (loan_amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -num_payments)
+
     return monthly_payment
 
-
-# Placeholder tools for refinancing
 @tool
-def refinancing_calculator(current_loan_balance: float, current_interest_rate: float, new_interest_rate: float) -> float:
+def refinancing_calculator(current_loan_balance: float, current_interest_rate: float, new_interest_rate: float, loan_term: int) -> float:
     """
-    Simple refinancing calculator: compares old and new rates for monthly payment difference.
+    Compare old and new monthly payments to calculate the savings per month.
     """
-    # Example refinancing calculation logic (simplified)
     old_monthly_payment = current_loan_balance * current_interest_rate / 12 / 100
     new_monthly_payment = current_loan_balance * new_interest_rate / 12 / 100
-    return new_monthly_payment - old_monthly_payment
+    return old_monthly_payment - new_monthly_payment
+
+@tool
+def break_even_calculator(refinancing_savings_per_month: float, refinancing_costs: float) -> float:
+    """
+    Calculate the break-even point (in months) for refinancing based on savings per month and refinancing costs.
+    """
+    if refinancing_savings_per_month <= 0:
+        return float('inf')  # If there's no savings, the break-even point is infinite
+    return refinancing_costs / refinancing_savings_per_month
 
 
 # Agent State for managing message history
@@ -108,34 +112,44 @@ def st_chat(prompt: str, injection:str =""):
     st.chat_message("assistant").write(response.choices[0].message.content)
     st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
-# Function to display the chat and ask user questions about home purchase or refinancing
-def main():
-    # Initialize Streamlit session state for chat history
-    if 'messages' not in st.session_state:
-        st.session_state.messages = []
-
-    # Chatbot logic to handle further conversation
-    user_input = st.text_input("Type your message here...")
+# Function to handle user input and ask for loan details for refinancing
+def handle_refinancing(state: AgentState):
+    st.chat_message("assistant").write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
     
-    if user_input:
-        # Predict intent using the trained model
-        predicted_intent = predict_intent(user_input)
+    # Fetch the current mortgage rates using the API
+    mortgage_rates = mortgage_rate()
+    fmr15 = mortgage_rates[0]
+    fmr30 = mortgage_rates[1]
 
-        if predicted_intent == "buy":
-            # Chatbot asks user for details about buying a home
-            with st.chat_message("assistant"):
-                st.write("It looks like you're asking about buying a home. Let's talk about Home Purchase.")
-                st.write("What is the loan amount you are considering?")
-            # st_chat("What is the loan amount you are considering?")
-        
-        elif predicted_intent == "refinance":
-            # Chatbot asks user for details about refinancing
-            st.write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
-            st.session_state.messages.append({"role": "assistant", "content": "What is your current loan balance?"})
-            st_chat("What is your current loan balance?")
+    # Display the rates to the user
+    st.chat_message("assistant").write(f"The current mortgage rates are:\n- 15-Year Fixed: {fmr15}%\n- 30-Year Fixed: {fmr30}%\n")
+    
+    # Ask for current loan balance, current interest rate, and desired new rate
+    st.chat_message("assistant").write("Can you provide your current loan balance and interest rate?")
+    st.session_state.messages.append({"role": "assistant", "content": "Can you provide your current loan balance and interest rate?"})
+    
+    # Wait for user input and store data
+    current_loan_balance = float(st.text_input("Current loan balance"))
+    current_interest_rate = float(st.text_input("Current interest rate (in %)"))
+    
+    st.chat_message("assistant").write(f"Please provide the new interest rate you're considering for refinancing (you can choose from 15-year: {fmr15}% or 30-year: {fmr30}%)")
+    new_interest_rate = float(st.text_input("New interest rate (in %)"))
+    
+    # Ask for loan term
+    st.chat_message("assistant").write("What loan term are you considering for the refinance? (e.g., 15 years, 30 years)")
+    loan_term = int(st.text_input("Loan term (in years)"))
+    
+    # Ask for refinancing costs (e.g., closing costs)
+    st.chat_message("assistant").write("Are there any refinancing costs (like closing costs)? Please provide the amount.")
+    refinancing_costs = float(st.text_input("Refinancing costs"))
 
-        # Handle the next set of responses and proceed with the corresponding actions
-        # These questions can be added dynamically based on user inputs and flow.
-        
-if __name__ == "__main__":
-    main()
+    # Calculate the savings per month
+    savings_per_month = refinancing_calculator(current_loan_balance, current_interest_rate, new_interest_rate, loan_term)
+    
+    # Calculate the break-even point
+    break_even_months = break_even_calculator(savings_per_month, refinancing_costs)
+    
+    # Display results to the user
+    st.chat_message("assistant").write(f"Your estimated savings per month from refinancing will be ${savings_per_month:.2f}.")
+    st.chat_message("assistant").write(f"Based on your refinancing costs of ${refinancing_costs:.2f}, it will take approximately {break_even_months:.2f} months to break even on your refinancing.")
+
