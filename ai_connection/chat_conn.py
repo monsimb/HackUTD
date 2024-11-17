@@ -24,28 +24,30 @@ def st_chat(prompt):
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})    # add to history
         
+        # Concatenate conversation history into a single prompt string
+        conversation_history = "\n".join(
+            [f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state.messages]
+        )
+        full_prompt = f"{conversation_history}\nUser: {prompt}\nAssistant:"
+
         # display assistant message in chat message container
         response = client.chat.completions.create(
             model='Meta-Llama-3.1-8B-Instruct',
-            messages=[{"role": "assistant", "content": "You are a helpful assistant"},
-                    {"role": "user", "content": prompt}],
+            messages=[{"role":"user", "content":full_prompt}],
             temperature=0.1,
             top_p=0.1
         )
         st.chat_message("assistant").write(response.choices[0].message.content)
         st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
+        
+# Add a page for refinancing
 
-
-# @tool
-# def NAME(word: str) -> float:
-#     """
-#     Triggers 
-#     Returns 
-#     """
-
-
-
-
+@tool
+def NAME(word: str) -> float:
+    """
+    Triggers 
+    Returns 
+    """
 
 class AgentState(TypedDict):    # Agent's current state, it can be history of messsages and other attributes you want to maintain
     messages: Annotated[list[AnyMessage], operator.add]   # {'messages': []}
