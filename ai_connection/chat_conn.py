@@ -11,6 +11,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from .api_calls import mortgage_rate
+
 
 load_dotenv()
 
@@ -70,7 +72,7 @@ def calculate_home_loan(loan_amount: float, interest_rate: float, loan_term: int
     Calculate the monthly payment for a home loan using the loan amount,
     interest rate, and loan term.
     """
-    monthly_interest_rate = interest_rate / 12 / 100
+    monthly_interest_rate = float(mortgage_rate()[0]) / 12 / 100
     num_payments = loan_term * 12
     monthly_payment = (loan_amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -num_payments)
     return monthly_payment
@@ -158,28 +160,20 @@ def main():
         predicted_intent = predict_intent(user_input)
 
         if predicted_intent == "buy":
-            st.write("It looks like you're asking about buying a home. Let's talk about Home Purchase.")
-            loan_amount = st.number_input("Enter loan amount:", min_value=0.0, value=200000.0)
-            interest_rate = st.number_input("Enter interest rate (%):", min_value=0.0, value=3.5)
-            loan_term = st.number_input("Enter loan term (years):", min_value=1, value=30)
-            
-            if loan_amount and interest_rate and loan_term:
-                monthly_payment = calculate_home_loan.invoke(input={"loan_amount": loan_amount, "interest_rate": interest_rate, "loan_term": loan_term})
-                st.write(f"Your estimated monthly payment is: ${monthly_payment:.2f}")
-
-        elif predicted_intent == "refinance":
-            st.write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
-            current_loan_balance = st.number_input("Enter current loan balance:", min_value=0.0, value=150000.0)
-            current_interest_rate = st.number_input("Enter current interest rate (%):", min_value=0.0, value=4.0)
-            new_interest_rate = st.number_input("Enter new interest rate (%):", min_value=0.0, value=3.0)
-            
-            if current_loan_balance and current_interest_rate and new_interest_rate:
-                monthly_savings = refinancing_calculator(current_loan_balance, current_interest_rate, new_interest_rate)
-                st.write(f"Your estimated monthly savings from refinancing would be: ${monthly_savings:.2f}")
+            # Chatbot asks user for details about buying a home
+            with st.chat_message("assistant"):
+                st.write("It looks like you're asking about buying a home. Let's talk about Home Purchase.")
+                st.write("What is the loan amount you are considering?")
+            # st_chat("What is the loan amount you are considering?")
         
-        # Handle chat functionality
-        st_chat(user_input)
+        elif predicted_intent == "refinance":
+            # Chatbot asks user for details about refinancing
+            st.write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
+            st.session_state.messages.append({"role": "assistant", "content": "What is your current loan balance?"})
+            st_chat("What is your current loan balance?")
 
-
+        # Handle the next set of responses and proceed with the corresponding actions
+        # These questions can be added dynamically based on user inputs and flow.
+        
 if __name__ == "__main__":
     main()
