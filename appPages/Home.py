@@ -1,9 +1,9 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
 from ai_connection import chat_conn as cc
+import streamlit as st
 
-st.title('App Name')
+st.title('Home')
 
 # init chat history
 if "messages" not in st.session_state:
