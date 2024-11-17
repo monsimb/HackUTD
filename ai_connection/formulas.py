@@ -28,9 +28,6 @@ def monthly(P, I, N):
 
 
 
-
-
-
 """
 3 Types Of Mortgage Calculators
 
@@ -42,3 +39,24 @@ A few types of mortgage calculators can prove helpful depending on your situatio
 
 3. Amortization calculator: A mortgage amortization calculator can show you how much interest and how many months of payments you can save by putting extra money toward your principal payment. You’ll need to input your loan amount, loan term length, interest rate and the state you live in.
 """
+
+
+from datetime import date
+import requests
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+
+mortgage_rate_url = 'https://api.api-ninjas.com/v1/mortgagerate'
+response = requests.get(
+    mortgage_rate_url,
+    headers={'X-Api-Key': 'MORTAGAGE_RATE'}
+    )
+if response.status_code == requests.codes.ok:
+    json.loads(response.text)[0]['data']
+    frm30 = json.loads(response.text)[0]['data']['frm_30']
+    frm15 = json.loads(response.text)[0]['data']['frm_15']
+    print(frm30, frm15)
+else:
+    print("Error:", response.status_code, response.text)

@@ -40,7 +40,6 @@ def st_chat(prompt):
         st.chat_message("assistant").write(response.choices[0].message.content)
         st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
         
-
 # Add a page for refinancing
 
 @tool
