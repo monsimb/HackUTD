@@ -1,10 +1,14 @@
+import pandas as pd
+import numpy as np
+from ai_connection import chat_conn as cc  # Import the chat module
+from ai_connection import nlp_intent_detection as id    # import intent detection module
 import streamlit as st
-from ai_connection.db_connection import get_user_data, add_user_data
-from ai_connection import chat_conn as cc
 
 st.title('Home')
 
-# Initialize chat history
+model = id.intentDetection()
+
+# Initialize chat history in Streamlit session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -54,5 +58,21 @@ if username:
 
 # Chat functionality
 prompt = st.chat_input("Type here...")
+
+# Ensure that there's a prompt
 if prompt:
-    cc.st_chat(prompt)
+    # Predict intent using the trained model
+    predicted_intent = cc.predict_intent(model, prompt)  # Use the predict_intent function from chat_conn
+
+    # cc.st_chat(prompt)  # This should work now without issues
+
+    st.write(prompt)
+
+    if predicted_intent == "buy":
+        # Chatbot asks user for details about buying a home
+        cc.st_chat(prompt, "the information required to calculate house payments. Ask me if I want help calculating any of them")
+    elif predicted_intent == "refinance":
+        # Chatbot asks user for details about refinancing
+        cc.st_chat(prompt, "the information required to refinance a home. Ask me if I want help calculating any of them")
+    
+    # Handle the conversation flow by calling st_chat
