@@ -22,13 +22,16 @@ def predict_intent(model, text):
 
 # Tool to calculate the monthly payment for home loan
 @tool
-def calculate_home_loan(loan_amount: float, interest_rate: float, loan_term: int) -> float:
+def calculate_home_loan(loan_amount: float, yr: float, loan_term: int) -> float:
     """
     Calculate the monthly payment for a home loan using the loan amount,
     interest rate, and loan term.
     """
-    mortgage_rates = mortgage_rate()
-    current_rate = mortgage_rates[0]  # Use the 15-year rate or another option
+    switch = {
+        '15': 0,
+        '30': 1
+    }
+    current_rate = mortgage_rate()[switch.get(yr)]  # Use the 15-year rate or another option
 
     monthly_interest_rate = current_rate / 12 / 100  # Convert annual rate to monthly
     num_payments = loan_term * 12
