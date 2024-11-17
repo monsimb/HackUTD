@@ -7,9 +7,10 @@ import operator
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain.tools import tool, StructuredTool
 from .api_calls import mortgage_rate
+from .db_connection import add_user_data
 
 load_dotenv()
-chrys_profile = "../public/chrys-profile.png"
+chrys_profile = "public/chrys-profile.png"
 
 # API reference using SambaNova
 client = openai.OpenAI(
@@ -108,9 +109,10 @@ def st_chat(prompt: str, injection:str =""):
         temperature=0.1,
         top_p=0.1
     )
+    chrys_profile = "../public/chrys-profile.png"
 
     # Display the assistant's message
-    st.chat_message("assistant", avatar=chrys_profile).write(response.choices[0].message.content)
+    st.chat_message("assistant").write(response.choices[0].message.content)
     st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 # Function to handle user input and ask for loan details for refinancing
@@ -157,14 +159,74 @@ def handle_refinancing(state: AgentState):
 
 # Function to handle the setting up profile information for the first time
 def setup_profile():
-    # credit_score = 0
-    # income = 0
+    """Handle the profile setup through chat interaction."""
+    if 'profile_step' not in st.session_state:
+        st.session_state.profile_step = 0
+        st.session_state.profile_data = {
+            "credit_score": None,
+            "annual_income": None,
+            "bankruptcy_history": None,
+            "employment_status": None,
+            "down_payment_savings": None
+        }
+    
+    questions = [
+        ("credit score", "What is your credit score? (Enter a number between 300-850)"),
+        ("annual income", "What is your annual income? (Enter number without commas or $)"),
+        ("bankruptcy history", "Have you ever filed for bankruptcy? (Yes/No)"),
+        ("employment status", "What is your current employment status? (Employed/Self-employed/Unemployed)"),
+    ]
+    
+    if st.session_state.profile_step < len(questions):
+        field, question = questions[st.session_state.profile_step]
+        st.chat_message("assistant", avatar=chrys_profile).write(question)
+        
+        # Add a key that includes the step to force a new text_input widget each time
+        user_input = st.text_input(f"Enter {field}", key=f"{field}_{st.session_state.profile_step}")
+        
+        if user_input:  # This will trigger when Enter is pressed
+            valid_input = True
+            if field == "credit_score":
+                try:
+                    score = int(user_input)
+                    if 300 <= score <= 850:
+                        st.session_state.profile_data[field] = score
+                    else:
+                        st.error("Credit score must be between 300 and 850")
+                        valid_input = False
+                except ValueError:
+                    st.error("Please enter a valid number")
+                    valid_input = False
+            
+            elif field in ["annual_income", "down_payment_savings"]:
+                try:
+                    st.session_state.profile_data[field] = float(user_input)
+                except ValueError:
+                    st.error("Please enter a valid number")
+                    valid_input = False
+            
+            elif field == "bankruptcy_history":
+                if user_input.lower() in ["yes", "no"]:
+                    st.session_state.profile_data[field] = user_input.lower() == "yes"
+                else:
+                    st.error("Please enter Yes or No")
+                    valid_input = False
+            
+            else:
+                st.session_state.profile_data[field] = user_input
+            
+            if valid_input:
+                st.session_state.profile_step += 1
+                st.rerun()
+    
+    # Once all questions are answered
+    elif st.session_state.profile_step == len(questions):
+        st.session_state.profile_data["_id"] = st.session_state.username
+        if add_user_data(st.session_state.profile_data):
+            st.chat_message("assistant").write("Great! Your profile has been set up successfully. How can I help you today?")
+            st.session_state.has_profile = True
+            st.session_state.profile_step += 1  # Prevent repeated saves
+        else:
+            st.error("There was an error saving your profile. Please try again.")
 
-    # profile_list = ["a", "b", "c"]
-    # profile_var_list = [credit_score, income]
-
-    # # Prompt user for each field of the form
-    # for i in len(profile_list):
-    #     st.chat_message("assistant", avatar=chrys_profile).write(f"What is the {profile_list[i]}")
-    #     profile_list[i] = int(st.text_input("Enter here:"))
-    st.chat_message("assistant", avatar=chrys_profile).write(f"Let's set it up!!")
+    
