@@ -13,4 +13,11 @@ pages = {
 }
 
 pg = st.navigation(pages)
+
+# Logout button
+with st.sidebar:
+    if st.button("Logout", key="logout"):
+        # add logout logic
+        st.sidebar.success("You have been logged out!")
+        
 pg.run()
