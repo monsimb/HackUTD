@@ -5,7 +5,6 @@ pages = {
         st.Page("appPages/Welcome.py", title="Welcome"),
         st.Page("appPages/Home.py", title="Chrys")
     ],
-    "Log Files":[],
     "Profile & Settings": [
         st.Page("appPages/Profile.py", title="Profile"),
         st.Page("appPages/Graph.py", title="Graph"),

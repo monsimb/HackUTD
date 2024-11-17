@@ -8,6 +8,17 @@ st.title('Chrys')
 
 model = id.intentDetection()
 
+# Retrieve user profile state
+has_profile = st.session_state.get("has_profile", False)
+username = st.session_state.get("username", None)
+
+# First, check if user has a profile
+if username:
+    st.info("Looks like you are a new user. Let's set up your profile.")
+    cc.setup_profile()
+else:
+    st.success("Profile found. All set to proceed! What can I help you with?")
+
 # Initialize chat history in Streamlit session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -22,6 +33,7 @@ for message in st.session_state.messages:
 
 # Ensure that there's a prompt
 if prompt:
+
     # Predict intent using the trained model
     predicted_intent = cc.predict_intent(model, prompt)  # Use the predict_intent function from chat_conn
 
