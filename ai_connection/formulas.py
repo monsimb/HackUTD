@@ -21,10 +21,7 @@ I = interest rate (base interest rate and not the APR)
 (Additionally, your mortgage interest rate is an annual interest rate that represents the interest that’s supposed to be paid monthly over the course of the year, so you’ll need to divide this by 12 to get the monthly interest rate)
 N = number of payments (This is the total number of payments in your loan repayment term. For instance, if it’s a 30-year mortgage with monthly payments and you always pay the minimum amount, you’ll make 360 payments.)
 """
-M = (P*(I*(1+I)**N)) / (((1+I)**N)-1)
-
-
-
+# M = (P*(I*(1+I)**N)) / (((1+I)**N)-1)
 
 
 
@@ -41,3 +38,21 @@ A few types of mortgage calculators can prove helpful depending on your situatio
 
 3. Amortization calculator: A mortgage amortization calculator can show you how much interest and how many months of payments you can save by putting extra money toward your principal payment. You’ll need to input your loan amount, loan term length, interest rate and the state you live in.
 """
+
+
+from datetime import date
+import requests
+import json
+
+mortgage_rate_url = 'https://api.api-ninjas.com/v1/mortgagerate'
+response = requests.get(
+    mortgage_rate_url,
+    headers={'X-Api-Key': 'N8vD9vI9z4E4Nrh5UwMC7Q==ntUX2FtKGolJG2pL'}
+    )
+if response.status_code == requests.codes.ok:
+    json.loads(response.text)[0]['data']
+    frm30 = json.loads(response.text)[0]['data']['frm_30']
+    frm15 = json.loads(response.text)[0]['data']['frm_15']
+    print(frm30, frm15)
+else:
+    print("Error:", response.status_code, response.text)

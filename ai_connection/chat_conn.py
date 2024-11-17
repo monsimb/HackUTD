@@ -29,12 +29,12 @@ client = openai.OpenAI(
 
 
 
-@tool
-def NAME(word: str) -> float:
-    """
-    Triggers 
-    Returns 
-    """
+# @tool
+# def NAME(word: str) -> float:
+#     """
+#     Triggers 
+#     Returns 
+#     """
 
 
 
