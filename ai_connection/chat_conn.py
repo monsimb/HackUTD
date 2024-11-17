@@ -7,6 +7,8 @@ import operator
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain.tools import tool, StructuredTool
 from .api_calls import mortgage_rate
+from .db_connection import add_user_data
+from appPages.Home import main_chat
 
 load_dotenv()
 chrys_profile = "../public/chrys-profile.png"
@@ -157,14 +159,42 @@ def handle_refinancing(state: AgentState):
 
 # Function to handle the setting up profile information for the first time
 def setup_profile():
-    # credit_score = 0
-    # income = 0
+    # Initialize state variables for profile setup
+    if "profile_step" not in st.session_state:
+        st.session_state.profile_step = 0  # Step in the setup process
+        st.session_state.profile_data = {}  # Dictionary to store user responses
 
-    # profile_list = ["a", "b", "c"]
-    # profile_var_list = [credit_score, income]
+    # List of questions and corresponding keys for the profile
+    profile_questions = [
+        {"key": "credit", "question": "What is your credit score?", "type": int},
+        {"key": "income", "question": "What is your monthly income?", "type": float},
+        {"key": "budget", "question": "What is your budget?", "type": float},
+    ]
 
-    # # Prompt user for each field of the form
-    # for i in len(profile_list):
-    #     st.chat_message("assistant", avatar=chrys_profile).write(f"What is the {profile_list[i]}")
-    #     profile_list[i] = int(st.text_input("Enter here:"))
-    st.chat_message("assistant", avatar=chrys_profile).write(f"Let's set it up!!")
+    # If there are remaining questions to ask
+    if st.session_state.profile_step < len(profile_questions):
+        current_question = profile_questions[st.session_state.profile_step]
+        st.chat_message("assistant").write(current_question["question"])
+        user_input = st.chat_input(f"Enter your {current_question['key'].replace('_', ' ')}")
+
+        if user_input:
+            try:
+                # Convert input to the required type and store it
+                st.session_state.profile_data[current_question["key"]] = current_question["type"](user_input)
+                st.session_state.profile_step += 1  # Move to the next question
+                st.rerun()  # Refresh the app to display the next question
+            except ValueError:
+                st.error(f"Please enter a valid {current_question['key'].replace('_', ' ')}.")
+
+    # If all questions are answered, display the summary
+    else:
+        st.chat_message("assistant").write("Thank you for providing your profile information!")
+        st.write("Here's the information you entered:")
+        for key, value in st.session_state.profile_data.items():
+            st.write(f"**{key.replace('_', ' ').capitalize()}:** {value}")
+
+        # Reset profile step if needed for future use
+        st.session_state.profile_step = 0
+        st.session_state.profile_data = {}
+
+    main_chat()
