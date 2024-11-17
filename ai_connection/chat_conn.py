@@ -1,13 +1,14 @@
 # Python program to handle chat functionality
 
 import os
+import streamlit as st
 from typing import Annotated, TypedDict
 import openai
 from dotenv import load_dotenv
 import operator
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain.tools import tool, StructuredTool
-import formulas
+# import formulas
 
 load_dotenv()
 
@@ -17,16 +18,22 @@ client = openai.OpenAI(
     base_url="https://api.sambanova.ai/v1",
 )
 
-# response = client.chat.completions.create(
-#     model='Meta-Llama-3.1-8B-Instruct',
-#     messages=[{"role": "system", "content": "You are a helpful assistant"},
-#               {"role": "user", "content": "Hello"}],
-#     temperature=0.1,
-#     top_p=0.1
-# )
-
-# print(response.choices[0].message.content)
-
+def st_chat(prompt):
+    if prompt:
+        # Display user message in chat message container
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})    # add to history
+        
+        # display assistant message in chat message container
+        response = client.chat.completions.create(
+            model='Meta-Llama-3.1-8B-Instruct',
+            messages=[{"role": "assistant", "content": "You are a helpful assistant"},
+                    {"role": "user", "content": prompt}],
+            temperature=0.1,
+            top_p=0.1
+        )
+        st.chat_message("assistant").write(response.choices[0].message.content)
+        st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 
 # @tool

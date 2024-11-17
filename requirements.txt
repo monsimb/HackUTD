@@ -1,3 +1,5 @@
-openai==1.52.4  
+openai==1.54.4  
 langchain-core==0.3.19
-
+langchain-tools==0.1.34
+streamlit==1.40.1
+python-dotenv==1.0.1
