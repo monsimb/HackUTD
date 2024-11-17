@@ -7,29 +7,44 @@ from dotenv import load_dotenv
 import operator
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain.tools import tool, StructuredTool
+import formulas
 
 load_dotenv()
 
+# API reference using SambaNova
 client = openai.OpenAI(
     api_key=os.environ.get("SAMBANOVA_API_KEY"),
     base_url="https://api.sambanova.ai/v1",
 )
 
-response = client.chat.completions.create(
-    model='Meta-Llama-3.1-8B-Instruct',
-    messages=[{"role": "system", "content": "You are a helpful assistant"},
-              {"role": "user", "content": "Hello"}],
-    temperature=0.1,
-    top_p=0.1
-)
+# response = client.chat.completions.create(
+#     model='Meta-Llama-3.1-8B-Instruct',
+#     messages=[{"role": "system", "content": "You are a helpful assistant"},
+#               {"role": "user", "content": "Hello"}],
+#     temperature=0.1,
+#     top_p=0.1
+# )
 
-print(response.choices[0].message.content)
+# print(response.choices[0].message.content)
+
+
+
+@tool
+def NAME(word: str) -> float:
+    """
+    Triggers 
+    Returns 
+    """
+
+
+
 
 
 class AgentState(TypedDict):    # Agent's current state, it can be history of messsages and other attributes you want to maintain
     messages: Annotated[list[AnyMessage], operator.add]   # {'messages': []}
 
 
+# Agents. Handles the tools
 class Agent:
     def __init__(self, model, tools, system=""):
         self.system
@@ -61,6 +76,3 @@ class Agent:
         return {'messages': results}    # [ToolMessage, ToolMessage, ...]
 
 
-
-# @tool
-# def financial(ticker: str)-> float
