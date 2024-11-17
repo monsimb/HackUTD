@@ -4,3 +4,4 @@ terraform.tfstate
 .terraform.lock.hcl
 .env
 ai_connection/.env
+ai_connection/__pycache__/
