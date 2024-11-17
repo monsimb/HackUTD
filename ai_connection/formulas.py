@@ -21,7 +21,7 @@ I = interest rate (base interest rate and not the APR)
 (Additionally, your mortgage interest rate is an annual interest rate that represents the interest that’s supposed to be paid monthly over the course of the year, so you’ll need to divide this by 12 to get the monthly interest rate)
 N = number of payments (This is the total number of payments in your loan repayment term. For instance, if it’s a 30-year mortgage with monthly payments and you always pay the minimum amount, you’ll make 360 payments.)
 """
-M = (P*(I*(1+I)**N)) / (((1+I)**N)-1)
+# M = (P*(I*(1+I)**N)) / (((1+I)**N)-1)
 
 
 
