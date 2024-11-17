@@ -4,6 +4,7 @@ from ai_connection import chat_conn as cc  # Import the chat module
 from ai_connection import nlp_intent_detection as id    # import intent detection module
 import streamlit as st
 from ai_connection import db_connection as db
+from time import sleep
 
 st.title('Welcome to Chrys!')
 
@@ -19,6 +20,8 @@ if username:
         st.write("Fetching your profile data...")
         # Display retrieved information
         st.write(user_info)
+        sleep(0.5)
+        st.switch_page("appPages/Home.py")
         # st.session_state.messages.append({"role": "system", "content": f"User {username} found in database."})
     else:
         st.warning("Username not found. Let's create a new profile.")
@@ -49,4 +52,6 @@ if username:
             }
             db.add_user_data(new_user_data)
             st.success("Profile created successfully!")
+            sleep(0.5)
+            st.switch_page("appPages/Home.py")
             # st.session_state.messages.append({"role": "system", "content": f"User {username} added to database."})

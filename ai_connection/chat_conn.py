@@ -91,13 +91,10 @@ class Agent:
             results.append(ToolMessage(tool_call_id=t['id'], name=t['name'], content=str(result)))
         return {'messages': results}    # [ToolMessage, ToolMessage, ...]
 
-def display_user_message(prompt: str):
-    # Display user message in chat message container
-    st.chat_message("user").markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})  # Add to history
-
 def st_chat(prompt: str, injection:str =""):
     """Handles chat flow with the assistant."""
+    st.chat_message("user").markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
     
     # Concatenate conversation history into a single prompt string
     conversation_history = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state.messages])
