@@ -36,12 +36,12 @@ def st_chat(prompt):
         st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 
-@tool
-def NAME(word: str) -> float:
-    """
-    Triggers 
-    Returns 
-    """
+# @tool
+# def NAME(word: str) -> float:
+#     """
+#     Triggers 
+#     Returns 
+#     """
 
 
 
