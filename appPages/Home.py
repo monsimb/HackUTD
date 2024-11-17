@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
 from ai_connection import chat_conn as cc  # Import the chat module
+from ai_connection import nlp_intent_detection as id    # import intent detection module
 import streamlit as st
 
 st.title('Home')
+
+model = id.intentDetection()
 
 # Initialize chat history in Streamlit session state
 if "messages" not in st.session_state:
@@ -20,7 +23,7 @@ prompt = st.chat_input("Type here...")
 # Ensure that there's a prompt
 if prompt:
     # Predict intent using the trained model
-    predicted_intent = cc.predict_intent(prompt)  # Use the predict_intent function from chat_conn
+    predicted_intent = cc.predict_intent(model, prompt)  # Use the predict_intent function from chat_conn
 
     # cc.st_chat(prompt)  # This should work now without issues
 
