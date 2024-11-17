@@ -2,7 +2,8 @@ import streamlit as st
 
 pages = {
     "": [
-        st.Page("appPages/Home.py", title="Home"),
+        st.Page("appPages/Welcome.py", title="Welcome"),
+        st.Page("appPages/Home.py", title="Chrys")
     ],
     "Log Files":[],
     "Profile & Settings": [
