@@ -11,7 +11,6 @@ from .db_connection import add_user_data
 from appPages.Home import main_chat
 
 load_dotenv()
-chrys_profile = "../public/chrys-profile.png"
 
 # API reference using SambaNova
 client = openai.OpenAI(
@@ -112,12 +111,12 @@ def st_chat(prompt: str, injection:str =""):
     )
 
     # Display the assistant's message
-    st.chat_message("assistant", avatar=chrys_profile).write(response.choices[0].message.content)
+    st.chat_message("assistant").write(response.choices[0].message.content)
     st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 # Function to handle user input and ask for loan details for refinancing
 def handle_refinancing(state: AgentState):
-    st.chat_message("assistant", avatar=chrys_profile).write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
+    st.chat_message("assistant").write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
     
     # Fetch the current mortgage rates using the API
     mortgage_rates = mortgage_rate()
@@ -125,25 +124,25 @@ def handle_refinancing(state: AgentState):
     fmr30 = mortgage_rates[1]
 
     # Display the rates to the user
-    st.chat_message("assistant", avatar=chrys_profile).write(f"The current mortgage rates are:\n- 15-Year Fixed: {fmr15}%\n- 30-Year Fixed: {fmr30}%\n")
+    st.chat_message("assistant").write(f"The current mortgage rates are:\n- 15-Year Fixed: {fmr15}%\n- 30-Year Fixed: {fmr30}%\n")
     
     # Ask for current loan balance, current interest rate, and desired new rate
-    st.chat_message("assistant", avatar=chrys_profile).write("Can you provide your current loan balance and interest rate?")
+    st.chat_message("assistant").write("Can you provide your current loan balance and interest rate?")
     st.session_state.messages.append({"role": "assistant", "content": "Can you provide your current loan balance and interest rate?"})
     
     # Wait for user input and store data
     current_loan_balance = float(st.text_input("Current loan balance"))
     current_interest_rate = float(st.text_input("Current interest rate (in %)"))
     
-    st.chat_message("assistant", avatar=chrys_profile).write(f"Please provide the new interest rate you're considering for refinancing (you can choose from 15-year: {fmr15}% or 30-year: {fmr30}%)")
+    st.chat_message("assistant").write(f"Please provide the new interest rate you're considering for refinancing (you can choose from 15-year: {fmr15}% or 30-year: {fmr30}%)")
     new_interest_rate = float(st.text_input("New interest rate (in %)"))
     
     # Ask for loan term
-    st.chat_message("assistant", avatar=chrys_profile).write("What loan term are you considering for the refinance? (e.g., 15 years, 30 years)")
+    st.chat_message("assistant").write("What loan term are you considering for the refinance? (e.g., 15 years, 30 years)")
     loan_term = int(st.text_input("Loan term (in years)"))
     
     # Ask for refinancing costs (e.g., closing costs)
-    st.chat_message("assistant", avatar=chrys_profile).write("Are there any refinancing costs (like closing costs)? Please provide the amount.")
+    st.chat_message("assistant").write("Are there any refinancing costs (like closing costs)? Please provide the amount.")
     refinancing_costs = float(st.text_input("Refinancing costs"))
 
     # Calculate the savings per month
@@ -153,8 +152,8 @@ def handle_refinancing(state: AgentState):
     break_even_months = break_even_calculator(savings_per_month, refinancing_costs)
     
     # Display results to the user
-    st.chat_message("assistant", avatar=chrys_profile).write(f"Your estimated savings per month from refinancing will be ${savings_per_month:.2f}.")
-    st.chat_message("assistant", avatar=chrys_profile).write(f"Based on your refinancing costs of ${refinancing_costs:.2f}, it will take approximately {break_even_months:.2f} months to break even on your refinancing.")
+    st.chat_message("assistant").write(f"Your estimated savings per month from refinancing will be ${savings_per_month:.2f}.")
+    st.chat_message("assistant").write(f"Based on your refinancing costs of ${refinancing_costs:.2f}, it will take approximately {break_even_months:.2f} months to break even on your refinancing.")
 
 
 # Function to handle the setting up profile information for the first time
@@ -193,8 +192,4 @@ def setup_profile():
         for key, value in st.session_state.profile_data.items():
             st.write(f"**{key.replace('_', ' ').capitalize()}:** {value}")
 
-        # Reset profile step if needed for future use
-        st.session_state.profile_step = 0
-        st.session_state.profile_data = {}
-
-    main_chat()
+        main_chat()
