@@ -30,12 +30,10 @@ if prompt:
     st.write(prompt)
 
     if predicted_intent == "buy":
-            # Chatbot asks user for details about buying a home
-            cc.st_chat(prompt, "the information required to calculate house payments. Ask me if I want help calculating any of them")
+        # Chatbot asks user for details about buying a home
+        cc.st_chat(prompt, "the information required to calculate house payments. Ask me if I want help calculating any of them")
     elif predicted_intent == "refinance":
         # Chatbot asks user for details about refinancing
-            st.write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
-            st.session_state.messages.append({"role": "assistant", "content": "What is your current loan balance?"})
-            cc.st_chat("What is your current loan balance?")
+        cc.st_chat(prompt, "the information required to refinance a home. Ask me if I want help calculating any of them")
     
     # Handle the conversation flow by calling st_chat
