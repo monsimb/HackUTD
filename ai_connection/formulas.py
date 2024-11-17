@@ -43,11 +43,14 @@ A few types of mortgage calculators can prove helpful depending on your situatio
 from datetime import date
 import requests
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 mortgage_rate_url = 'https://api.api-ninjas.com/v1/mortgagerate'
 response = requests.get(
     mortgage_rate_url,
-    headers={'X-Api-Key': 'N8vD9vI9z4E4Nrh5UwMC7Q==ntUX2FtKGolJG2pL'}
+    headers={'X-Api-Key': 'MORTAGAGE_RATE'}
     )
 if response.status_code == requests.codes.ok:
     json.loads(response.text)[0]['data']
