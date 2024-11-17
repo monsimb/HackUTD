@@ -84,28 +84,29 @@ class Agent:
             results.append(ToolMessage(tool_call_id=t['id'], name=t['name'], content=str(result)))
         return {'messages': results}    # [ToolMessage, ToolMessage, ...]
 
-def st_chat(prompt):
+def display_user_message(prompt: str):
+    # Display user message in chat message container
+    st.chat_message("user").markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})  # Add to history
+
+def st_chat(prompt: str, injection:str =""):
     """Handles chat flow with the assistant."""
-    if prompt:
-        # Display user message in chat message container
-        st.chat_message("user").markdown(prompt)
-        st.session_state.messages.append({"role": "user", "content": prompt})  # Add to history
-        
-        # Concatenate conversation history into a single prompt string
-        conversation_history = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state.messages])
-        full_prompt = f"{conversation_history}\nUser: {prompt}\nAssistant:"
+    
+    # Concatenate conversation history into a single prompt string
+    conversation_history = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state.messages])
+    full_prompt = f"{conversation_history}\nUser: {prompt}\nAssistant:" + injection
 
-        # Call the assistant's model (this can be OpenAI or another service)
-        response = client.chat.completions.create(
-            model='Meta-Llama-3.1-8B-Instruct',
-            messages=[{"role": "user", "content": full_prompt}],
-            temperature=0.1,
-            top_p=0.1
-        )
+    # Call the assistant's model (this can be OpenAI or another service)
+    response = client.chat.completions.create(
+        model='Meta-Llama-3.1-8B-Instruct',
+        messages=[{"role": "user", "content": full_prompt}],
+        temperature=0.1,
+        top_p=0.1
+    )
 
-        # Display the assistant's message
-        st.chat_message("assistant").write(response.choices[0].message.content)
-        st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
+    # Display the assistant's message
+    st.chat_message("assistant").write(response.choices[0].message.content)
+    st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 # Function to display the chat and ask user questions about home purchase or refinancing
 def main():

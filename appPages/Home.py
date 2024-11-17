@@ -31,9 +31,7 @@ if prompt:
 
     if predicted_intent == "buy":
             # Chatbot asks user for details about buying a home
-            with st.chat_message("assistant"):
-                st.write("It looks like you're asking about buying a home. Let's talk about Home Purchase.")
-                st.write("What is the loan amount you are considering?")
+            cc.st_chat(prompt, "the information required to calculate house payments. Ask me if I want help calculating any of them")
     elif predicted_intent == "refinance":
         # Chatbot asks user for details about refinancing
             st.write("It looks like you're asking about refinancing. Let's talk about Refinancing.")
