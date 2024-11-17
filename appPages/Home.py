@@ -8,8 +8,16 @@ st.title('Chrys')
 
 model = id.intentDetection()
 
+# Retrieve user profile state
+has_profile = st.session_state.get("has_profile", False)
+username = st.session_state.get("username", None)
+
 # First, check if user has a profile
-cc.setup_profile()
+if username:
+    st.info("Looks like you are a new user. Let's set up your profile.")
+    cc.setup_profile()
+else:
+    st.success("Profile found. All set to proceed! What can I help you with?")
 
 # Initialize chat history in Streamlit session state
 if "messages" not in st.session_state:

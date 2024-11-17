@@ -9,7 +9,7 @@ from langchain.tools import tool, StructuredTool
 from .api_calls import mortgage_rate
 
 load_dotenv()
-chrys_profile = "/home/alex/Templates/HackUTD/ai_connection/chrys-profile.png"
+chrys_profile = "../public/chrys-profile.png"
 
 # API reference using SambaNova
 client = openai.OpenAI(
@@ -154,3 +154,17 @@ def handle_refinancing(state: AgentState):
     st.chat_message("assistant", avatar=chrys_profile).write(f"Your estimated savings per month from refinancing will be ${savings_per_month:.2f}.")
     st.chat_message("assistant", avatar=chrys_profile).write(f"Based on your refinancing costs of ${refinancing_costs:.2f}, it will take approximately {break_even_months:.2f} months to break even on your refinancing.")
 
+
+# Function to handle the setting up profile information for the first time
+def setup_profile():
+    # credit_score = 0
+    # income = 0
+
+    # profile_list = ["a", "b", "c"]
+    # profile_var_list = [credit_score, income]
+
+    # # Prompt user for each field of the form
+    # for i in len(profile_list):
+    #     st.chat_message("assistant", avatar=chrys_profile).write(f"What is the {profile_list[i]}")
+    #     profile_list[i] = int(st.text_input("Enter here:"))
+    st.chat_message("assistant", avatar=chrys_profile).write(f"Let's set it up!!")
