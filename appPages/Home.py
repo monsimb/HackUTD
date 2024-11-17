@@ -22,6 +22,9 @@ for message in st.session_state.messages:
 
 # Ensure that there's a prompt
 if prompt:
+    # First, check if user has a profile
+    cc.setup_profile()
+
     # Predict intent using the trained model
     predicted_intent = cc.predict_intent(model, prompt)  # Use the predict_intent function from chat_conn
 

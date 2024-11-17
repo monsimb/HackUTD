@@ -153,3 +153,19 @@ def handle_refinancing(state: AgentState):
     st.chat_message("assistant").write(f"Your estimated savings per month from refinancing will be ${savings_per_month:.2f}.")
     st.chat_message("assistant").write(f"Based on your refinancing costs of ${refinancing_costs:.2f}, it will take approximately {break_even_months:.2f} months to break even on your refinancing.")
 
+# Function to handle user input and ask for profile information
+def setup_profile(state: AgentState):
+    st.warning("Need to make a profile first")
+    # credit_score = 0
+    # bankrupcies = 0
+    # payments = 0
+
+    # profile_list = ["credit score", "number of bankrupcies", "number of payments"]
+    # profile_var_list = [credit_score, bankrupcies, payments]
+    # # Agent should prompt user for each profile information
+    # for i in len(profile_list):
+    #     st.chat_message("assistant").write(f"What is the {profile_list[i]}?")
+    #     profile_var_list[i] = int(st.text_input(""))
+
+    # st.session_state.messages.append({"role": "assistant", "content": ""})
+
