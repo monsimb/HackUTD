@@ -1,22 +1,16 @@
 # Python program to handle chat functionality
 
 import os
+import streamlit as st
 from typing import Annotated, TypedDict
 import openai
 from dotenv import load_dotenv
 import operator
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage, ToolMessage
 from langchain.tools import tool, StructuredTool
-import formulas
-from pymongo import MongoClient
+# import formulas
 
 load_dotenv()
-
-MONGO_URI='mongodb+srv://{USER}:{PASS}@hackutd-project-dev-clu.n76pi.mongodb.net/'
-
-client = MongoClient(MONGO_URI)
-db = client["mortgage"]
-users_coll = db["buy"]
 
 # API reference using SambaNova
 client = openai.OpenAI(
@@ -24,30 +18,30 @@ client = openai.OpenAI(
     base_url="https://api.sambanova.ai/v1",
 )
 
-# Get user data's principal and num_payments data
-def get_user_data(_id):
-    """
-    Fetches user data from MongoDB on user ID
-    """
-    _id = users_coll.find_one({"_id": _id})
-    if _id:
-        return{
-            "principal": _id.get("principal"),
-            "payments": _id.get("payments")
-        }
-    return None
+def st_chat(prompt):
+    if prompt:
+        # Display user message in chat message container
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})    # add to history
+        
+        # Concatenate conversation history into a single prompt string
+        conversation_history = "\n".join(
+            [f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state.messages]
+        )
+        full_prompt = f"{conversation_history}\nUser: {prompt}\nAssistant:"
 
-# response = client.chat.completions.create(
-#     model='Meta-Llama-3.1-8B-Instruct',
-#     messages=[{"role": "system", "content": "You are a helpful assistant"},
-#               {"role": "user", "content": "Hello"}],
-#     temperature=0.1,
-#     top_p=0.1
-# )
+        # display assistant message in chat message container
+        response = client.chat.completions.create(
+            model='Meta-Llama-3.1-8B-Instruct',
+            messages=[{"role":"user", "content":full_prompt}],
+            temperature=0.1,
+            top_p=0.1
+        )
+        st.chat_message("assistant").write(response.choices[0].message.content)
+        st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
+        
 
-# print(response.choices[0].message.content)
-
-
+# Add a page for refinancing
 
 @tool
 def NAME(word: str) -> float:
@@ -56,48 +50,6 @@ def NAME(word: str) -> float:
     Returns 
     """
 
-@tool
-def BUY(user_id: str) -> str:
-    """
-    Use the user's Principal interest, Interest rate, and Number of payments
-    to find out the monthly payment
-    """
-    # get their PN from DB
-    user_data = get_user_data(user_id)
-    if not user_data:
-        return "User data not found."
-    
-    prin = user_data["principal"]
-    payments = user_data["payments"]
-    # interest = API_CALL_HERE
-    interest = 2
-
-    # Try to get calculate the monthly payment
-    try:
-        payment = formulas.M(prin, interest, payments)
-        return f'Monthly mortgage payment: ${payment: .2f}'
-    except Exception as e:
-        return f'Error occurred: {e}'
-    
-
-@tool
-def monthly_payment(principal: float, interest_rate: float, num_payments: int) -> float:
-    return formulas.M(principal, interest_rate, num_payments)
-
-# Route 1: Buy
-def buying_agent(state, agent, name):
-    last_message = state['messages'][-1]
-    if "mortgage" in last_message.content.lower():
-        user_id = last_message.get("_id")
-        result = agent.tools["BUY"].invoke({"_id": user_id})
-        return result
-    return "Mortgage keyword not mentioned. No action taken."
-
-# Route 2: Refinance
-def refinance_agent(state, agent, name):
-    return "Refinance agent triggered"
-
-
 class AgentState(TypedDict):    # Agent's current state, it can be history of messsages and other attributes you want to maintain
     messages: Annotated[list[AnyMessage], operator.add]   # {'messages': []}
 
@@ -105,12 +57,10 @@ class AgentState(TypedDict):    # Agent's current state, it can be history of me
 # Agents. Handles the tools
 class Agent:
     def __init__(self, model, tools, system=""):
-        self.model = model
         self.system
         self.tools = {t.name: t for t in tools}
 
     def exists_action(self, state: AgentState):
-        # Checks for specific msg tool name
         result = state['messages'][-1]
         return len(result.tool_calls) > 0
 
@@ -136,10 +86,3 @@ class Agent:
         return {'messages': results}    # [ToolMessage, ToolMessage, ...]
 
 
-tools = [
-    NAME,
-    BUY,
-    monthly_payment,
-    refinance_agent,
-    buying_agent,
-]
